@@ -36,6 +36,7 @@ import {
   sendLocalTransportMessage,
   closeLocalTransportSession,
 } from "./local-transport.js";
+import { ensureDesktopManagedListenAddress } from "./managed-listen-address.js";
 import { createNodeEntrypointInvocation, resolveDaemonRunnerEntrypoint } from "./runtime-paths.js";
 import {
   ExternalCliCommandError,
@@ -305,6 +306,10 @@ async function startDaemon(): Promise<DesktopDaemonStatus> {
   }
 
   const home = getPaseoHome();
+  if (!(await readDaemonInstance(home))) {
+    const listen = await ensureDesktopManagedListenAddress(home);
+    logDesktopDaemonLifecycle("resolved managed daemon listen address", { listen });
+  }
   const invocation = createNodeEntrypointInvocation({
     entrypoint: resolveDaemonRunnerEntrypoint(),
     argvMode: "node-script",

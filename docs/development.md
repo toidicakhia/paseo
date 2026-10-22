@@ -62,7 +62,7 @@ PASEO_DEV_RESET_HOME=1 npm run dev            # clear and reseed the derived wor
 
 ### Daemon endpoints
 
-- Stable daemon launched by the desktop app: `localhost:6767`.
+- Stable daemon launched by the desktop app: `localhost:6767`. If another process or OS user already holds it, the desktop-managed daemon picks the next free loopback port and saves it as `daemon.listen` in that user's `config.json`.
 - Root checkout dev daemon: `localhost:6768`.
 - Root checkout Expo: `http://localhost:8081`.
 - Root checkout desktop dev Expo: first free port from `8082` through `8089`.

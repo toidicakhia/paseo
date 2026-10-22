@@ -316,13 +316,18 @@ describe("upsertDesktopDaemonConnection", () => {
     ]);
   });
 
-  it("does not add localhost when desktop bootstrap finds its server id already registered", async () => {
+  it("refreshes the listen address when the daemon moved to another port", async () => {
     const fake = createFakeStore([makeRelayOnlyHost("srv_desktop")]);
 
-    const result = await upsertDesktopDaemonConnection(fake.store, makeStatus());
+    const result = await upsertDesktopDaemonConnection(
+      fake.store,
+      makeStatus({ listen: "127.0.0.1:6768" }),
+    );
 
     expect(result).toEqual({ ok: true });
-    expect(fake.upserts).toEqual([]);
+    expect(fake.upserts).toEqual([
+      { listenAddress: "127.0.0.1:6768", serverId: "srv_desktop", hostname: "desktop" },
+    ]);
   });
 
   it("keeps an already registered host without waiting for a listen address", async () => {
