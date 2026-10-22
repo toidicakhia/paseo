@@ -17,6 +17,8 @@ const mocks = vi.hoisted(() => ({
   },
   runExternalCliJsonCommand: vi.fn(),
   runExternalCliTextCommand: vi.fn(),
+  startDaemonInstance: vi.fn(),
+  ensureDesktopManagedListenAddress: vi.fn(async () => "127.0.0.1:6768"),
   createNodeEntrypointInvocation: vi.fn(() => ({
     command: "node",
     args: [],
@@ -54,7 +56,12 @@ vi.mock("electron-log/main", () => ({
 vi.mock("@getpaseo/server/daemon-control", async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
   resolvePaseoHome: () => mocks.paseoHome,
+  startDaemonInstance: mocks.startDaemonInstance,
   spawnProcess: mocks.spawnProcess,
+}));
+
+vi.mock("./managed-listen-address.js", () => ({
+  ensureDesktopManagedListenAddress: mocks.ensureDesktopManagedListenAddress,
 }));
 
 vi.mock("../settings/desktop-settings-electron.js", () => ({
@@ -88,6 +95,10 @@ describe("daemon-manager commands", () => {
     mocks.settings = DEFAULT_DESKTOP_SETTINGS;
     mocks.runExternalCliJsonCommand.mockReset();
     mocks.runExternalCliTextCommand.mockReset();
+    mocks.startDaemonInstance.mockReset();
+    mocks.startDaemonInstance.mockResolvedValue({ instance: {}, spawned: true });
+    mocks.ensureDesktopManagedListenAddress.mockReset();
+    mocks.ensureDesktopManagedListenAddress.mockResolvedValue("127.0.0.1:6768");
     mocks.createNodeEntrypointInvocation.mockReset();
     mocks.createNodeEntrypointInvocation.mockReturnValue({ command: "node", args: [], env: {} });
     mocks.spawnProcess.mockReset();
@@ -123,6 +134,21 @@ describe("daemon-manager commands", () => {
       platform: process.platform,
       currentVersion: "1.2.3",
     });
+  });
+
+  it("resolves a non-conflicting listen address before starting the daemon", async () => {
+    mkdirSync(mocks.paseoHome);
+
+    await createDaemonCommandHandlers().start_desktop_daemon();
+
+    expect(mocks.ensureDesktopManagedListenAddress).toHaveBeenCalledWith(mocks.paseoHome);
+    expect(mocks.startDaemonInstance).toHaveBeenCalledWith(
+      expect.objectContaining({
+        home: mocks.paseoHome,
+        desktopManaged: true,
+        mode: "managed",
+      }),
+    );
   });
 
   it("reports a stopped daemon without launching the CLI when no local daemon runs", async () => {

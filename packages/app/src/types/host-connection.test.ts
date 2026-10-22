@@ -314,6 +314,78 @@ describe("upsertHostConnectionInProfiles", () => {
     expect(profile.password).toBe("new-secret");
     expect(profile.preferredConnectionId).toBe(replacement.id);
   });
+
+  it("replaces a stale local listen address and keeps the new one preferred", () => {
+    const stale: HostConnection = {
+      id: "direct:localhost:6767",
+      type: "directTcp",
+      endpoint: "localhost:6767",
+      useTls: false,
+    };
+    const relay: HostConnection = {
+      id: "relay:wss:relay.example.com:443",
+      type: "relay",
+      relayEndpoint: "relay.example.com:443",
+      useTls: true,
+      daemonPublicKeyB64: "pk_a",
+    };
+    const current: HostConnection = {
+      id: "direct:localhost:6768",
+      type: "directTcp",
+      endpoint: "localhost:6768",
+      useTls: false,
+    };
+    const existing: HostProfile = {
+      ...makeHost("srv_known"),
+      connections: [relay, stale],
+      preferredConnectionId: stale.id,
+    };
+
+    const [profile] = upsertHostConnectionInProfiles({
+      profiles: [existing],
+      serverId: "srv_known",
+      connection: current,
+    });
+
+    expect(profile.connections).toEqual([relay, current]);
+    expect(profile.preferredConnectionId).toBe(current.id);
+  });
+
+  it("keeps a relay preferred when the local listen address moves", () => {
+    const stale: HostConnection = {
+      id: "direct:localhost:6767",
+      type: "directTcp",
+      endpoint: "localhost:6767",
+      useTls: false,
+    };
+    const relay: HostConnection = {
+      id: "relay:wss:relay.example.com:443",
+      type: "relay",
+      relayEndpoint: "relay.example.com:443",
+      useTls: true,
+      daemonPublicKeyB64: "pk_a",
+    };
+    const current: HostConnection = {
+      id: "direct:localhost:6768",
+      type: "directTcp",
+      endpoint: "localhost:6768",
+      useTls: false,
+    };
+    const existing: HostProfile = {
+      ...makeHost("srv_known"),
+      connections: [relay, stale],
+      preferredConnectionId: relay.id,
+    };
+
+    const [profile] = upsertHostConnectionInProfiles({
+      profiles: [existing],
+      serverId: "srv_known",
+      connection: current,
+    });
+
+    expect(profile.connections).toEqual([relay, current]);
+    expect(profile.preferredConnectionId).toBe(relay.id);
+  });
 });
 
 describe("relay endpoint security pin", () => {

@@ -181,6 +181,21 @@ function hostLifecycleEquals(left: HostLifecycle, right: HostLifecycle): boolean
   return JSON.stringify(left) === JSON.stringify(right);
 }
 
+function isLocalHostConnection(connection: HostConnection): boolean {
+  if (connection.type === "directSocket" || connection.type === "directPipe") {
+    return true;
+  }
+  if (connection.type !== "directTcp") {
+    return false;
+  }
+  try {
+    const endpoint = normalizeLoopbackToLocalhost(normalizeHostPort(connection.endpoint));
+    return endpoint.startsWith("localhost:");
+  } catch {
+    return false;
+  }
+}
+
 function upsertHostConnectionById(
   connections: HostConnection[],
   connection: HostConnection,
@@ -344,10 +359,15 @@ export function upsertHostConnectionInProfiles(input: {
 
   const matchedProfiles = matchingIndexes.map((index) => existing[index]);
   const prev = matchedProfiles.find((daemon) => daemon.serverId === serverId) ?? matchedProfiles[0];
-  const nextConnections = upsertHostConnectionById(
-    matchedProfiles.flatMap((daemon) => daemon.connections),
-    normalizedConnection,
-  );
+  const existingConnections = matchedProfiles.flatMap((daemon) => daemon.connections);
+  const mergedConnections =
+    isLocalHostConnection(normalizedConnection) && matchingIndexes.length > 0
+      ? existingConnections.filter(
+          (candidate) =>
+            !isLocalHostConnection(candidate) || candidate.id === normalizedConnection.id,
+        )
+      : existingConnections;
+  const nextConnections = upsertHostConnectionById(mergedConnections, normalizedConnection);
   const nextLifecycle = prev.lifecycle;
   const nextLabel = prev.label === prev.serverId ? derivedLabel : prev.label;
   const nextPreferredConnectionId =

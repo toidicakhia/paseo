@@ -24,11 +24,11 @@ export async function upsertDesktopDaemonConnection(
   if (!serverId) {
     return { ok: false, error: "Desktop daemon did not return a server id." };
   }
-  if (store.getHosts().some((host) => host.serverId === serverId)) {
-    return { ok: true };
-  }
   const listenAddress = daemon.listen?.trim() ?? "";
   if (!listenAddress) {
+    if (store.getHosts().some((host) => host.serverId === serverId)) {
+      return { ok: true };
+    }
     return { ok: false, error: "Desktop daemon did not return a listen address." };
   }
   if (!connectionFromListen(listenAddress)) {
