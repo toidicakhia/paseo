@@ -16,7 +16,8 @@ function connectionListen(connection: HostConnection): string | null {
   }
 }
 
-// Desktop main checks that this target matches the live desktop-managed daemon.
+// Desktop main checks that this target matches the live daemon in this home,
+// whether the desktop launched it or attached to one already running.
 // A plain browser has no bridge and falls back to its saved host password.
 export async function readDesktopManagedLocalCredential(
   connection: HostConnection,
