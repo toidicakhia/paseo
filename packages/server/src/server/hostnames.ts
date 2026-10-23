@@ -42,6 +42,10 @@ function isDefaultAllowedHostname(hostname: string): boolean {
   // Vite-style defaults: localhost, *.localhost, and all IP addresses.
   if (hostname === "localhost") return true;
   if (hostname.endsWith(".localhost")) return true;
+  // Cloudflare Quick Tunnels get a random *.trycloudflare.com hostname that
+  // cannot be configured before cloudflared starts. Cloudflare controls the
+  // zone, so trusting it does not create a DNS-rebinding path to loopback.
+  if (hostname.endsWith(".trycloudflare.com")) return true;
   if (net.isIP(hostname) !== 0) return true;
   return false;
 }
@@ -51,7 +55,8 @@ function isDefaultAllowedHostname(hostname: string): boolean {
  *
  * Semantics:
  * - `hostnames === true` => allow any host.
- * - `hostnames === []` or `undefined` => allow localhost, *.localhost, and all IPs.
+ * - `hostnames === []` or `undefined` => allow localhost, *.localhost, *.trycloudflare.com,
+ *   and all IPs.
  * - `hostnames === ['.example.com', 'myhost']` => allow those *in addition* to defaults.
  */
 export function isHostnameAllowed(

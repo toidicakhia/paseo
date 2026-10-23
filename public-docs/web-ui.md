@@ -208,7 +208,7 @@ If you don't want to manage a reverse proxy or open ports, a tunnel gives you an
   cloudflared tunnel --url http://localhost:6767
   ```
 
-  Cloudflare terminates TLS and sets `X-Forwarded-Proto: https`, so auto-connect works. Because the URL is public, **set a daemon password.**
+  Cloudflare terminates TLS and sets `X-Forwarded-Proto: https`, so auto-connect works. Paseo allows `*.trycloudflare.com` hosts by default, so the quick tunnel URL needs no hostname configuration. Because the URL is public, **set a daemon password.**
 
 ## Security
 

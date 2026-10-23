@@ -75,9 +75,11 @@ Paseo 使用主机白名单校验传入请求的 `Host` 请求头。主机无法
 
 通过 `config.json` 中的 `daemon.hostnames` 配置：
 
-- 默认（`[]`）：允许 `localhost`、`*.localhost` 以及所有 IP 地址
+- 默认（`[]`）：允许 `localhost`、`*.localhost`、`*.trycloudflare.com` 以及所有 IP 地址
 - `['.example.com']`：允许 `example.com` 及其任何子域名，外加默认值
 - `true`：允许任何主机（不推荐）
+
+`*.trycloudflare.com` 用于 Cloudflare 快速隧道。该区域由 Cloudflare 控制，因此隧道主机名无法被重绑定到回环地址。
 
 ## 密码验证 {#password-authentication}
 

@@ -16,6 +16,15 @@ describe("hostnames (vite-style)", () => {
     expect(isHostnameAllowed("[::1]:6767", undefined)).toBe(true);
   });
 
+  it("allows Cloudflare Quick Tunnel hostnames by default", () => {
+    expect(isHostnameAllowed("random-words-here.trycloudflare.com:443", undefined)).toBe(true);
+  });
+
+  it("does not allow the trycloudflare.com apex or lookalike domains by default", () => {
+    expect(isHostnameAllowed("trycloudflare.com:443", undefined)).toBe(false);
+    expect(isHostnameAllowed("nottrycloudflare.com:443", undefined)).toBe(false);
+  });
+
   it("rejects non-default hosts when no allowlist is provided", () => {
     expect(isHostnameAllowed("evil.com:6767", undefined)).toBe(false);
   });

@@ -27,7 +27,7 @@ export function parseHostTarget(input: string): HostTarget {
   } catch {
     throw Object.assign(
       new Error(
-        "Invalid host connection. Use host:port, ws(s)://, tcp://, unix://, pipe://, ssh:// or a pairing URL.",
+        "Invalid host connection. Use host:port, http(s)://, ws(s)://, tcp://, unix://, pipe://, ssh:// or a pairing URL.",
       ),
       { code: "invalid_connection" },
     );
@@ -63,6 +63,7 @@ function parse(input: string): HostTarget {
     };
   }
   if (input.startsWith("tcp://")) return tcpTarget(input);
+  if (/^https?:\/\//.test(input)) return httpTarget(input);
   if (/^wss?:\/\//.test(input)) return websocketTarget(input);
   const endpoint = validatedEndpoint(/^\d+$/.test(input) ? `127.0.0.1:${input}` : input);
   return {
@@ -101,6 +102,11 @@ function tcpTarget(input: string): HostTarget {
     password: parts.password,
     description: `tcp://${endpoint}`,
   };
+}
+function httpTarget(input: string): HostTarget {
+  const url = new URL(input);
+  url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+  return websocketTarget(url.toString());
 }
 function websocketTarget(input: string): HostTarget {
   const url = new URL(input);

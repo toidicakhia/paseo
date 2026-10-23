@@ -8,12 +8,13 @@ category: Getting started
 
 # Connectivity
 
-Your Paseo app connects to the daemon running on your computer or server. Paseo Desktop and the CLI can tunnel through SSH. Mobile clients can connect through the Paseo relay or directly with Tailscale.
+Your Paseo app connects to the daemon running on your computer or server. Paseo Desktop and the CLI can tunnel through SSH. Mobile clients can connect through the Paseo relay, directly with Tailscale, or through a Cloudflare Tunnel.
 
 This is client-to-daemon transport. If you are looking for the service that starts agents from GitHub, Slack, and Discord events, that is [Hub](/docs/hub).
 
 - [SSH](#ssh)
 - [Paseo relay](#paseo-relay)
+- [Cloudflare Tunnel](#cloudflare-tunnel)
 - [Tailscale](#tailscale)
 
 ## SSH
@@ -70,6 +71,44 @@ paseo daemon pair
 ```
 
 Confirm when prompted. Paseo prints a QR code and pairing link. Scan the QR code with Paseo on your phone, or choose **Paste pairing link** in the phone app.
+
+## Cloudflare Tunnel
+
+Cloudflare Tunnel gives the daemon a public HTTPS address without opening a port. Run `cloudflared` on the daemon machine, not on the phone.
+
+Set a password first, then start a quick tunnel:
+
+```bash
+paseo daemon set-password
+paseo daemon restart
+cloudflared tunnel --url http://127.0.0.1:6767
+```
+
+`cloudflared` prints a URL such as `https://random-words.trycloudflare.com`. Paseo allows `*.trycloudflare.com` hostnames by default, so the quick tunnel needs no hostname configuration.
+
+Connect from the phone:
+
+1. Open **Settings → Add host → Direct connection**.
+2. Enter the hostname from the tunnel URL in **Host**, without `https://`.
+3. Enter `443` in **Port**.
+4. Turn on **Use SSL** and enter the daemon password.
+5. Select **Connect**.
+
+From the CLI, pass the URL directly:
+
+```bash
+paseo --host https://random-words.trycloudflare.com ls -a
+```
+
+Add `?password=<daemon-password>` when the daemon requires a password.
+
+A quick tunnel gets a new hostname every time `cloudflared` starts. For a stable address, run a named tunnel with your own domain and add that domain to `daemon.hostnames`:
+
+```bash
+paseo daemon config set daemon.hostnames '[".paseo.example.com"]'
+```
+
+The tunnel is public, so keep the daemon password enabled.
 
 ## Tailscale
 

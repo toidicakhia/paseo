@@ -6,12 +6,13 @@ nav: 连接
 
 # 连接 {#connectivity}
 
-你的 Paseo 应用连接的是运行在你电脑或服务器上的 daemon。Paseo 桌面端和 CLI 可以通过 SSH 隧道连接。移动客户端可以通过 Paseo 中继连接，或者用 Tailscale 直接连接。
+你的 Paseo 应用连接的是运行在你电脑或服务器上的 daemon。Paseo 桌面端和 CLI 可以通过 SSH 隧道连接。移动客户端可以通过 Paseo 中继连接、用 Tailscale 直接连接，或者通过 Cloudflare Tunnel 连接。
 
 这里说的是客户端到 daemon 的传输。如果你要找的是由 GitHub、Slack 和 Discord 事件启动 Agent 的服务，那是 [Hub](/docs/hub)。
 
 - [SSH](#ssh)
 - [Paseo 中继](#paseo-relay)
+- [Cloudflare Tunnel](#cloudflare-tunnel)
 - [Tailscale](#tailscale)
 
 ## SSH {#ssh}
@@ -68,6 +69,44 @@ paseo daemon pair
 ```
 
 在提示时确认。Paseo 会打印二维码和配对链接。用手机上的 Paseo 扫描二维码，或在手机应用中选择 **粘贴配对链接**。
+
+## Cloudflare Tunnel {#cloudflare-tunnel}
+
+Cloudflare Tunnel 为 daemon 提供一个公开的 HTTPS 地址，无需开放端口。请在 daemon 所在的机器上运行 `cloudflared`，不要在手机上运行。
+
+先设置密码，再启动快速隧道：
+
+```bash
+paseo daemon set-password
+paseo daemon restart
+cloudflared tunnel --url http://127.0.0.1:6767
+```
+
+`cloudflared` 会打印一个类似 `https://random-words.trycloudflare.com` 的 URL。Paseo 默认允许 `*.trycloudflare.com` 主机名，因此快速隧道无需额外配置主机名。
+
+从手机连接：
+
+1. 打开 **设置 → 添加主机 → 直接连接**。
+2. 在 **Host** 中输入隧道 URL 中的主机名，不带 `https://`。
+3. 在 **端口** 中输入 `443`。
+4. 打开 **使用 SSL**，并输入 daemon 密码。
+5. 选择 **连接**。
+
+从 CLI 连接时，直接传入 URL：
+
+```bash
+paseo --host https://random-words.trycloudflare.com ls -a
+```
+
+daemon 需要密码时，加上 `?password=<daemon-password>`。
+
+每次启动 `cloudflared`，快速隧道都会得到一个新的主机名。需要固定地址时，请使用自定义域名的命名隧道，并把该域名加入 `daemon.hostnames`：
+
+```bash
+paseo daemon config set daemon.hostnames '[".paseo.example.com"]'
+```
+
+隧道是公开的，请保持 daemon 密码启用。
 
 ## Tailscale {#tailscale}
 
