@@ -206,7 +206,7 @@ PASEO_TRUSTED_PROXIES=loopback,172.16.0.0/12 PASEO_WEB_UI_ENABLED=true paseo dae
   cloudflared tunnel --url http://localhost:6767
   ```
 
-  Cloudflare 会终止 TLS 并设置 `X-Forwarded-Proto: https`，因此自动连接可以正常工作。由于 URL 是公开的，**请设置 daemon 密码**。
+  Cloudflare 会终止 TLS 并设置 `X-Forwarded-Proto: https`，因此自动连接可以正常工作。Paseo 默认允许 `*.trycloudflare.com` 主机，因此快速隧道 URL 无需配置主机名。由于 URL 是公开的，**请设置 daemon 密码**。
 
 ## 安全 {#security}
 

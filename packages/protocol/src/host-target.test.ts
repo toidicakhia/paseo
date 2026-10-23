@@ -8,6 +8,8 @@ test.each([
   ["unix:///tmp/paseo.sock", "unix:///tmp/paseo.sock"],
   ["pipe://\\\\.\\pipe\\paseo", "pipe://\\\\.\\pipe\\paseo"],
   ["wss://example.com/custom?token=secret", "wss://example.com"],
+  ["https://example.com/custom?token=secret", "wss://example.com"],
+  ["http://localhost:6767", "ws://localhost:6767"],
   ["tcp://example.com:6767?password=secret", "tcp://example.com:6767"],
 ])(
   "the shared connector accepts %s and exposes only safe display text",
@@ -15,6 +17,17 @@ test.each([
     expect(parseHostTarget(connection).description).toBe(description);
   },
 );
+test("http(s) targets map to the daemon websocket endpoint", () => {
+  expect(parseHostTarget("https://paseo.example.com")).toMatchObject({
+    kind: "socket",
+    url: "wss://paseo.example.com/ws",
+  });
+  expect(parseHostTarget("http://localhost:6767")).toMatchObject({
+    kind: "socket",
+    url: "ws://localhost:6767/ws",
+  });
+});
+
 test("SSH daemon credentials are separate from SSH authentication and excluded from display text", () => {
   expect(parseHostTarget("ssh://deploy@build-box:2222?daemonPort=7777&password=secret")).toEqual({
     kind: "ssh",

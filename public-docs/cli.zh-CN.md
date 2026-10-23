@@ -77,7 +77,7 @@ paseo --host localhost:6767 host enable hst_123
 paseo --host localhost:6767 host rm hst_123
 ```
 
-`add` 接受 TCP/主机和端口、`ws://`/`wss://`、本地 socket/管道、SSH，以及 relay/配对 URL。
+`add` 接受 TCP/主机和端口、`http://`/`https://`、`ws://`/`wss://`、本地 socket/管道、SSH，以及 relay/配对 URL。
 SSH 连接到已经运行的 daemon。如果该 daemon 需要密码，在 SSH URI 中添加 `?password=...`（已有 `daemonPort` 时使用 `&password=...`）。无法访问的目标仍会保存，并自动重试。
 `ls` 包括已禁用和连接失败的主机。`inspect` 包括不含凭据的连接详情和恢复说明。
 JSON 输出不会包含连接凭据。
@@ -444,7 +444,7 @@ paseo hub logout               # Remove the active stored CLI login
 
 ## 连接远程 daemon {#connecting-to-a-remote-daemon}
 
-全局的 `--host` 选项接受本地目标（`host:port`、Unix 套接字或 Windows 管道），也接受配对信息 URL，即移动应用在扫码配对时使用的同一个 `https://app.paseo.sh/#offer=...` 链接。使用配对信息 URL 时，CLI 会通过 Paseo 中继以端到端加密的方式连接，因此你可以驱动另一台机器上的 daemon，而不必把它暴露在网络上。
+全局的 `--host` 选项接受本地目标（`host:port`、Unix 套接字或 Windows 管道）、直连 URL（`http(s)://` 或 `ws(s)://`，包括 Cloudflare Tunnel 主机名），也接受配对信息 URL，即移动应用在扫码配对时使用的同一个 `https://app.paseo.sh/#offer=...` 链接。使用配对信息 URL 时，CLI 会通过 Paseo 中继以端到端加密的方式连接，因此你可以驱动另一台机器上的 daemon，而不必把它暴露在网络上。
 
 从你要控制的 daemon 获取配对信息 URL：
 
@@ -507,7 +507,7 @@ paseo ls -q                    # IDs only (quiet)
 
 ## 全局选项 {#global-options}
 
-- `--host <target>`，连接另一个 daemon（`host:port`、Unix 套接字，或用于中继的 `https://app.paseo.sh/#offer=...`）。见[连接远程 daemon](#connecting-to-a-remote-daemon)。
+- `--host <target>`，连接另一个 daemon（`host:port`、Unix 套接字、直连 `http(s)://`/`ws(s)://` URL，或用于中继的 `https://app.paseo.sh/#offer=...`）。见[连接远程 daemon](#connecting-to-a-remote-daemon)。
 - `--json`，JSON 输出
 - `-q, --quiet`，最少的输出
 - `--no-color`，禁用颜色

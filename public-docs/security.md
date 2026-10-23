@@ -78,9 +78,11 @@ Paseo uses a host allowlist to validate the `Host` header on incoming requests. 
 
 Configure via `daemon.hostnames` in `config.json`:
 
-- Default (`[]`): allow `localhost`, `*.localhost`, and all IP addresses
+- Default (`[]`): allow `localhost`, `*.localhost`, `*.trycloudflare.com`, and all IP addresses
 - `['.example.com']`: allow `example.com` and any subdomain, plus defaults
 - `true`: allow any host (not recommended)
+
+`*.trycloudflare.com` covers Cloudflare Quick Tunnels. Cloudflare controls that zone, so a tunnel hostname cannot be rebound to loopback.
 
 ## Password authentication
 
