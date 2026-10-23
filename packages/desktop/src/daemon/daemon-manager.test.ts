@@ -181,7 +181,7 @@ describe("daemon-manager commands", () => {
     expect(status.error).toBeTruthy();
   });
 
-  it("returns a local credential only for its live managed daemon listen", async () => {
+  it("returns a local credential only for a live daemon listen in this home", async () => {
     mkdirSync(mocks.paseoHome);
     const token = "a".repeat(43);
     writeFileSync(path.join(mocks.paseoHome, "local-credential"), `${token}\n`, { mode: 0o600 });
@@ -191,14 +191,14 @@ describe("daemon-manager commands", () => {
       hostname: hostname(),
       uid: process.getuid?.() ?? 0,
       listen: "127.0.0.1:6799",
-      desktopManaged: true,
     };
     const lockPath = path.join(mocks.paseoHome, "paseo.pid");
     writeFileSync(lockPath, JSON.stringify(lock));
     const handler = createDaemonCommandHandlers().desktop_local_credential;
     expect(await handler({ listen: "localhost:6799" })).toBe(token);
     expect(await handler({ listen: "remote:6799" })).toBeNull();
-    writeFileSync(lockPath, JSON.stringify({ ...lock, desktopManaged: false }));
+    expect(await handler({})).toBeNull();
+    writeFileSync(lockPath, JSON.stringify({ ...lock, startedAt: "2000-01-01T00:00:00.000Z" }));
     expect(await handler({ listen: "localhost:6799" })).toBeNull();
   });
 });

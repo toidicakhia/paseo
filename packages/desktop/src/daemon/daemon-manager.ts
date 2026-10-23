@@ -413,7 +413,7 @@ export function createDaemonCommandHandlers(): Record<string, DesktopCommandHand
     desktop_daemon_status: () => resolveDesktopDaemonStatus(),
     desktop_local_credential: async (args) => {
       const instance = await readDaemonInstance(getPaseoHome());
-      if (!instance?.desktopManaged || typeof args?.listen !== "string") return null;
+      if (!instance || typeof args?.listen !== "string") return null;
       return readLocalCredentialForTarget(getPaseoHome(), args.listen);
     },
     start_desktop_daemon: () => startDaemon(),
