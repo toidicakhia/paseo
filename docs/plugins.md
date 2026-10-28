@@ -382,6 +382,15 @@ grace. During daemon startup, plugin sessions may connect while application WebS
 paused; the daemon accepts clients only after configured plugins have settled and the initial
 catalog is complete.
 
+The app retains client bundles per host in its file cache (IndexedDB on web), keyed by plugin ID
+and the daemon's SHA-256. A cold client verifies stored contents before advertising their hashes;
+missing or corrupt files request full bundles. Only the latest catalog's bundles remain. Hashing
+uses Expo's native async digest on mobile, avoiding a JavaScript hash loop on Hermes; reading and
+passing the bundle string still costs memory and time once per client lifetime.
+Persistence runs after catalog reconstruction without delaying installation. One write runs at a
+time; while storage is busy, only the newest pending catalog is kept. A failed write leaves the
+in-memory bundles usable, and a later catalog retries persistence.
+
 When the same plugin contribution exists on multiple hosts, Paseo shows it once in the sidebar and
 adds a host picker to the screen header. The selected host supplies the bundle, RPC transport, and
 query cache. Explicit SDK targets follow the [host API contract](../public-docs/plugins/reference.md#discover-hosts-and-target-another-host).
@@ -430,8 +439,15 @@ The [public reference](../public-docs/plugins/reference.md#icons) owns the autho
 
 Server entries register lifecycle observers with `server.on()` and request transforms with
 `server.before()`. The [public reference](../public-docs/plugins/reference.md#lifecycle-hooks)
-owns callback shapes, ordering, and failure behavior. `plugin-examples/lifecycle-logger` registers all
+owns callback shapes, ordering, and failure behavior. `agent.create` edits the agent's saved
+configuration; `agent.session_open` contributes launch-only `env`, `tools`, and `mcpServers`,
+re-derived on each open and following the plugin's lifecycle. See
+[Inject MCP servers](../public-docs/plugins/reference.md#inject-mcp-servers) for choosing the hook.
+`plugin-examples/lifecycle-logger` registers all
 eleven hooks; `plugin-examples/lifecycle-actions` demonstrates common automation callbacks.
+Session-open hooks also [attach tools to individual agents](../public-docs/plugins/reference.md#attach-tools-to-agents),
+as shown in `plugin-examples/agent-tools`. The agent manager stamps their metadata per session;
+executable definitions stay in the plugin process.
 
 Emit from the operation owner, not a client subscription. Provider history replay must not trigger
 live hooks. Observers must not be awaited inside agent mutations: a callback can send a prompt or
@@ -497,6 +513,11 @@ It contains the provider defaults and per-agent overrides merged by the daemon.
 Validate and apply it inside the provider; core does not know your option shape.
 See [provider options](custom-providers.md#provider-options) for configuration and
 merge semantics.
+
+Providers add an optional veto to daemon baseline cleanup through the per-session
+[runtime safety query](../public-docs/plugins/providers.md#permit-idle-runtime-cleanup).
+The daemon calls the same `AgentSession.canStopRuntime()` interface for built-ins and plugins;
+the plugin bridge transports that query through the existing provider request/event protocol.
 
 Agent refresh closes the current provider session and opens it again with current configuration and
 persistence. Re-read credentials and provider-owned configuration on `session.open`; consume the
