@@ -14,7 +14,7 @@ const primaryIconColorMapping = (theme: Theme) => ({ color: theme.colors.primary
  * Drop overlay rendered by FileDropZone. Reads `isDragging` on the UI thread so the dim
  * only ever repaints the backdrop — never the surrounding tree.
  */
-export function FileDropBackdrop() {
+export function FileDropBackdrop({ label }: { label?: string }) {
   const { t } = useTranslation();
   const ctx = useFileDropContext();
   const isDragging = ctx?.isDragging;
@@ -38,7 +38,7 @@ export function FileDropBackdrop() {
       <View style={styles.backdrop} />
       <View style={styles.content}>
         <ThemedUpload size={32} uniProps={primaryIconColorMapping} />
-        <Text style={styles.text}>{t("composer.attachments.dropFilesHere")}</Text>
+        <Text style={styles.text}>{label ?? t("composer.attachments.dropFilesHere")}</Text>
       </View>
     </Animated.View>
   );
