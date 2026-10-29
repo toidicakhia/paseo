@@ -29,11 +29,16 @@ function toRecord(value: unknown): Record<string, unknown> | undefined {
     : undefined;
 }
 
+const NOTIFICATION_ICON_SIZE = 64;
+
 function getNotificationIcon(): Electron.NativeImage | null {
+  // Linux notification daemons render the raw pixmap without scaling it down, so a
+  // 512px icon shows up enormous. Prefer a small asset and clamp whatever we load.
   const candidates = [
-    path.resolve(__dirname, "../assets/icon.png"),
     path.resolve(__dirname, "../assets/64x64.png"),
+    path.join(process.resourcesPath, "icon.png"),
     path.resolve(__dirname, "../assets/128x128.png"),
+    path.resolve(__dirname, "../assets/icon.png"),
   ];
 
   for (const iconPath of candidates) {
@@ -41,9 +46,17 @@ function getNotificationIcon(): Electron.NativeImage | null {
       continue;
     }
     const icon = nativeImage.createFromPath(iconPath);
-    if (!icon.isEmpty()) {
-      return icon;
+    if (icon.isEmpty()) {
+      continue;
     }
+    const { width, height } = icon.getSize();
+    if (
+      process.platform === "linux" &&
+      (width > NOTIFICATION_ICON_SIZE || height > NOTIFICATION_ICON_SIZE)
+    ) {
+      return icon.resize({ width: NOTIFICATION_ICON_SIZE, height: NOTIFICATION_ICON_SIZE });
+    }
+    return icon;
   }
 
   return null;
