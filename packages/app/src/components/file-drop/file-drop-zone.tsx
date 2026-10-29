@@ -14,6 +14,8 @@ interface FileDropZoneProps {
   children: ReactNode;
   /** When true, no drops are accepted and the backdrop stays hidden. */
   disabled?: boolean;
+  /** Custom backdrop label; defaults to the composer's "Drop files here". */
+  label?: string;
   /** Styles the drop area (defaults to filling its parent). The backdrop fills this area. */
   style?: StyleProp<ViewStyle>;
 }
@@ -23,7 +25,7 @@ interface FileDropZoneProps {
  * descendant calling `useFileDrop` — the drop area, the backdrop, and the consumer are
  * decoupled, so a consumer's layout can never collapse the backdrop.
  */
-export function FileDropZone({ children, disabled = false, style }: FileDropZoneProps) {
+export function FileDropZone({ children, disabled = false, label, style }: FileDropZoneProps) {
   const isDragging = useSharedValue(false);
   const suppressed = useSharedValue(false);
   const hasSink = useSharedValue(false);
@@ -69,7 +71,7 @@ export function FileDropZone({ children, disabled = false, style }: FileDropZone
     <FileDropContext.Provider value={ctx}>
       <View ref={containerRef as unknown as RefObject<View>} style={targetStyle}>
         {children}
-        <FileDropBackdrop />
+        <FileDropBackdrop label={label} />
       </View>
     </FileDropContext.Provider>
   );

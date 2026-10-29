@@ -1,4 +1,6 @@
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { FileDropZone } from "@/components/file-drop/file-drop-zone";
+import { SidebarProjectDropSink } from "@/components/sidebar/sidebar-project-drop";
 import {
   View,
   Text,
@@ -1950,6 +1952,7 @@ export function SidebarWorkspaceList({
   parentGestureRef,
   dragGestureHostActive,
 }: SidebarWorkspaceListProps) {
+  const { t } = useTranslation();
   const pathname = usePathname();
   const hosts = useHosts();
   const rowItems = useSidebarRowItems();
@@ -2050,7 +2053,12 @@ export function SidebarWorkspaceList({
       />
     );
 
-  return content;
+  return (
+    <FileDropZone style={styles.container} label={t("sidebar.actions.addProject")}>
+      {content}
+      <SidebarProjectDropSink />
+    </FileDropZone>
+  );
 }
 
 /**
