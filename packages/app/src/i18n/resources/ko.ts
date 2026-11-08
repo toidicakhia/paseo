@@ -1186,6 +1186,14 @@ export const ko: TranslationResources = {
     },
   },
   sidebar: {
+    view: {
+      failed: "사이드바 보기를 불러오지 못했습니다.",
+      useDefault: "기본 보기 사용",
+      readFailed: "사이드바 보기 설정을 불러오지 못했습니다.",
+      agentUnavailable: "에이전트를 더 이상 사용할 수 없습니다",
+      terminalUnavailable: "터미널을 더 이상 사용할 수 없습니다",
+      projectUnavailable: "프로젝트를 더 이상 사용할 수 없습니다",
+    },
     statusGroupAccessibility: "{{label}} 그룹",
     statusBucket: {
       needsInput: "입력 필요",
@@ -1629,6 +1637,7 @@ export const ko: TranslationResources = {
     openPath: "경로 열기",
   },
   branchSwitcher: {
+    failedToLoad: "브랜치를 불러오지 못했습니다. 선택기를 다시 열어 재시도하세요.",
     triggerTooltip: "워크스페이스 브랜치 전환",
     currentBranch: "현재 브랜치: {{branchName}}. 브랜치를 전환하려면 누르세요.",
     placeholder: "브랜치 전환...",
@@ -1652,7 +1661,11 @@ export const ko: TranslationResources = {
     loadingCommands: "명령 불러오는 중...",
     noFiles: "파일 또는 디렉터리를 찾을 수 없습니다",
     noCommands: "명령을 찾을 수 없습니다",
-    failedToLoad: "불러오지 못했습니다",
+    loadingProviderCommands: "{{provider}} 명령 불러오는 중...",
+    commandsFailed: "명령을 불러오지 못했습니다",
+    providerCommandsFailed: "{{provider}} 명령을 불러오지 못했습니다",
+    filesFailed: "파일을 검색하지 못했습니다",
+    skillTag: "스킬",
     chooseProjectForCommands: "명령을 보려면 프로젝트를 선택하세요",
     chooseModelForCommands: "명령을 보려면 모델을 선택하세요",
   },
@@ -2580,6 +2593,13 @@ export const ko: TranslationResources = {
         description: "프롬프트 사이를 이동하기 위한 개요 표시",
       },
       sidebar: {
+        view: {
+          title: "사이드바 보기",
+          label: "보기",
+          default: "기본 보기",
+          unavailable:
+            "선택한 보기를 사용할 수 없거나 비활성화되어 있습니다. 기본 보기를 표시합니다.",
+        },
         header: {
           title: "헤더",
           description: "사이드바 상단에 표시할 항목과 순서를 선택하세요",
