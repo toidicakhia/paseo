@@ -1,0 +1,64 @@
+# Windows 7/8/8.1 x64 installer. Upstream Electron dropped those systems after
+# 22, so the runtime comes from
+# https://github.com/e3kskoy7wqk/Electron-for-windows-7 and
+# scripts/build-win7.mjs passes its dist zip through electronDist. Build it with
+# `npm run build:desktop:win7` from the repository root.
+#
+# This config does not extend electron-builder.yml: electron-builder concatenates
+# array values across an `extends` chain, so the base config's x64+arm64 Windows
+# targets survive any override and an arm64 build appears next to the x64 one.
+# Keep the packaging keys below in step with electron-builder.yml by hand.
+npmRebuild: false
+appId: sh.paseo.desktop
+productName: Paseo
+executableName: Paseo
+protocols:
+  - name: Paseo agent link
+    schemes:
+      - paseo
+afterPack: ./scripts/after-pack.js
+directories:
+  output: release
+files:
+  - dist/**/*
+  - "!**/*.map"
+  - "!node_modules/@getpaseo/*/src/**"
+  - "!node_modules/@getpaseo/**/*.test.*"
+  - "!node_modules/@getpaseo/**/*.spec.*"
+  - "!node_modules/@getpaseo/server/dist/server/web-ui/**"
+  - "!node_modules/@getpaseo/server/dist/server/builtin-plugins/**"
+  - "!node_modules/@getpaseo/*/.debug/**"
+  - "!node_modules/@getpaseo/*/.tasks/**"
+  - "!node_modules/@getpaseo/*/conversations/**"
+  - "!node_modules/@getpaseo/*/test-results/**"
+asarUnpack:
+  - dist/daemon/node-entrypoint-runner.js
+  - node_modules/@getpaseo/server/dist/server/terminal/shell-integration/**/*
+extraResources:
+  # Preserve physical compiler inputs, including .d.ts files omitted from packaged node_modules.
+  - from: ../server/dist/server/builtin-plugins
+    to: builtin-plugins
+  - from: ../app/dist
+    to: app-dist
+  - from: assets/editor-targets
+    to: editor-target-icons
+# The regular Windows build needs Windows 10; never offer it as an update.
+publish: null
+win:
+  artifactName: "Paseo-Setup-${version}-win7-${arch}.${ext}"
+  icon: assets/icon.ico
+  extraResources:
+    - from: bin/paseo.cmd
+      to: bin/paseo.cmd
+  # Windows 7 has no arm64 and the fork ships only an x64 runtime.
+  target:
+    - target: nsis
+      arch:
+        - x64
+    - target: zip
+      arch:
+        - x64
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true

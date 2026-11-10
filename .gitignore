@@ -90,6 +90,7 @@ packages/protocol/codegen/generated/
 
 /artifacts
 packages/desktop/.cache/
+packages/desktop/.electron-win7/
 packages/desktop/src-tauri/resources/managed-runtime/
 app.json
 
