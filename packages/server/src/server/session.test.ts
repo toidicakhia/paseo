@@ -529,6 +529,10 @@ test("routes plugin requests and releases its owned catalog subscription on clea
       return request;
     },
     emit: () => {},
+    hasWorktreeManager: () => false,
+    createWorktree: async () => null,
+    removeWorktree: async () => null,
+    restoreWorktree: async () => null,
     listPlugins: async () => [plugin],
     getLogs: () => [
       {
@@ -670,6 +674,10 @@ test("leaves out the client bundles a catalog request already holds", async () =
   const pluginRuntime: NonNullable<SessionOptions["pluginRuntime"]> = {
     before: async (_name, request) => request,
     emit: () => {},
+    hasWorktreeManager: () => false,
+    createWorktree: async () => null,
+    removeWorktree: async () => null,
+    restoreWorktree: async () => null,
     listPlugins: async () => [],
     getLogs: () => [],
     installDirectory: async () => {
@@ -2083,6 +2091,43 @@ test("push token registration can be revoked by the connected client", async () 
     {
       type: "push.unregister.response",
       payload: { requestId: "revoke-1" },
+    },
+  ]);
+});
+
+test("push token registration forwards notification preferences to pushNotifications.renew", async () => {
+  const renewed: Array<{ token: string; preferences: unknown }> = [];
+  const session = createSessionForTest({
+    pushNotifications: asPushNotifications({
+      renew: (token: string, preferences?: unknown) => renewed.push({ token, preferences }),
+    }),
+  });
+
+  const preferences = {
+    enabled: true,
+    events: {
+      agentPermission: true,
+      agentError: true,
+      agentFinished: true,
+      terminalNeedsInput: true,
+      terminalFinished: false,
+    },
+    plugins: {
+      enabled: true,
+      muted: ["review-bot"],
+    },
+  };
+
+  await session.handleMessage({
+    type: "register_push_token",
+    token: "ExponentPushToken[prefs-device]",
+    preferences,
+  });
+
+  expect(renewed).toEqual([
+    {
+      token: "ExponentPushToken[prefs-device]",
+      preferences,
     },
   ]);
 });
@@ -4067,7 +4112,11 @@ describe("session checkout pull and push handling", () => {
       requestId: "request-push",
     });
 
-    expect(checkoutGitMocks.pushCurrentBranch).toHaveBeenCalledWith("/tmp/request-worktree");
+    expect(checkoutGitMocks.pushCurrentBranch).toHaveBeenCalledWith(
+      "/tmp/request-worktree",
+      undefined,
+      { paseoHome: "/tmp/paseo-home", worktreesRoot: undefined },
+    );
     expect(workspaceGitService.getSnapshot).toHaveBeenCalledWith("/tmp/request-worktree", {
       force: true,
       reason: "push",
